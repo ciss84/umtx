@@ -5,15 +5,10 @@ async function runJailbreak() {
     // Hide jailbreak button and show console
     document.getElementById("run-jb-parent").style.opacity = "0";
     document.getElementById("console-parent").style.opacity = "1";
+    await sleep(500);
 
     setTimeout(async () => {
-        let wk_exploit_type = localStorage.getItem("wk_exploit_type");
-        if (wk_exploit_type == "psfree") {
-            debug_log("[+] running psfree for userland exploit...");
-            await run_psfree();
-        } else if (wk_exploit_type == "fontface") {
-            await run_fontface();
-        }
+        await run_psfree();
     }, 100);
 }
 
