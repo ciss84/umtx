@@ -8,6 +8,7 @@ async function runJailbreak() {
     await sleep(500);
 
     setTimeout(async () => {
+        debug_log("[+] running psfree for userland exploit...");
         await run_psfree();
     }, 100);
 }
