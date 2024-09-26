@@ -5,7 +5,6 @@ async function runJailbreak() {
     // Hide jailbreak button and show console
     document.getElementById("run-jb-parent").style.opacity = "0";
     document.getElementById("console-parent").style.opacity = "1";
-    await sleep(500);
 
     setTimeout(async () => {
         debug_log("[+] running psfree for userland exploit...");
