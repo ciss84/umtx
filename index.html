@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="main.css">
 
-    <script defer src="int64.js"></script>
+    <script defer src="utils.js"></script>
     <script defer src="rop.js"></script>
     <script defer src="exploit.js"></script>
-    <script defer src="custom_host_stuff.js"></script>
-    <script defer src="appcache_handler.js"></script>
-    <script defer src="utils.js"></script>
     <script defer src="webkit.js"></script>
     <script>
         window.addEventListener('load', function () {
-            onload_setup();
+             // Hide jailbreak button and show console
+             document.getElementById("run-jb-parent").style.opacity = "0";
+             document.getElementById("console-parent").style.opacity = "1";
+             debug_log("[+] running psfree for userland exploit...");
         }, false);
     </script>
     <style>
@@ -32,7 +32,7 @@
     </style>
 </head>
 
-<body>
+<body onload="setTimeout(run_psfree, 1500);">
     <svg style="display: none" version="2.0">
         <defs>
             <symbol id="delete-icon" viewBox="0 -960 960 960">
@@ -51,8 +51,8 @@
     <div id="redirector-view"
         style="min-width: 100%; max-width: 100%; position: absolute; top: 0; left: -100%; min-height: 100%; max-height: 100%;">
         <div style="overflow-y: scroll; width: 100%;max-height: 100vh;min-height: 100vh;" id="redirector-view-inner">
-            <h3 style="text-align: center;">Redirector</h3>
-            <div style="padding: 25px;padding-top: 0; display: flex;">
+            <h3 style="text-align: center;">Redirector</h3>            
+               <div style="padding: 25px;padding-top: 0; display: flex;">
                 <input id="redirector-input" type="text" value="http://"
                     style="width: 100%; border-radius: 10px; padding: 15px; background-color: #223; color: #fff; border-color: #334; font-size: 20px;" />
                 <a class="btn icon-btn" style="width: 100px;" tabindex="0" onclick="redirectorGo()">
@@ -84,28 +84,6 @@
         </div>
         <div style="position: absolute; margin: 20px; margin-right:28px; bottom: 0; right: 0px;" class="opacity-transition" id="l2-redirect">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 35px;">
-                <div >
-                    <span style="vertical-align: middle;display: inline-block;                ">
-                        <svg viewbox="0 0 79 61" xmlns="http://www.w3.org/2000/svg" style="width: 32px; height:32px;">
-                            <rect x="0" y="0" width="79" height="61" rx="13" ry="13" fill="#bdc0c2" />
-                            <text x="50%" y="50%" dy="17.5px" text-anchor="middle" fill="#4e4e4e" font-size="50"
-                                font-weight="bold">L2</text>
-                        </svg>
-                    </span>
-                    <span
-                        style="font-size: 18px; vertical-align: middle;display: inline-block; margin-left: 8px; font-weight: bold; color: #fff;">Redirect</span>
-                </div>
-                <div >
-                    <span style="vertical-align: middle;display: inline-block;                ">
-                        <svg viewbox="0 0 79 61" xmlns="http://www.w3.org/2000/svg" style="width: 32px; height:32px;">
-                            <rect x="0" y="0" width="79" height="61" rx="13" ry="13" fill="#bdc0c2" />
-                            <text x="50%" y="50%" dy="17.5px" text-anchor="middle" fill="#4e4e4e" font-size="50"
-                                font-weight="bold">R2</text>
-                        </svg>
-                    </span>
-                    <span
-                        style="font-size: 18px; vertical-align: middle;display: inline-block; margin-left: 8px; font-weight: bold; color: #fff;">Options</span>
-                </div>
             </div>
         </div>
 
@@ -117,7 +95,6 @@
 
             <div id="run-jb-parent" class="opacity-transition"
                 style="display: flex; justify-content: center; align-items: center; position: absolute; top: 0;left: 0; width: 100%; height: 100%;">
-                <a tabindex="0" class="btn" style="max-width: 50%;" id="run-jb" onclick="runJailbreak()">Jailbreak</a>
             </div>
 
             <center style="position: fixed;bottom: 0;width: 100%;margin-bottom: 10px;font-size: 13px;"

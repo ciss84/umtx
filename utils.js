@@ -1,15 +1,84 @@
+function int64(low, hi) {
+    this.low = (low >>> 0);
+    this.hi = (hi >>> 0);
+    this.add32inplace = function (val) {
+        let new_lo = (((this.low >>> 0) + val) & 0xFFFFFFFF) >>> 0;
+        let new_hi = (this.hi >>> 0);
+        if (new_lo < this.low) {
+            new_hi++;
+        }
+        this.hi = new_hi;
+        this.low = new_lo;
+    }
+    this.add32 = function (val) {
+        let new_lo = (((this.low >>> 0) + val) & 0xFFFFFFFF) >>> 0;
+        let new_hi = (this.hi >>> 0);
+
+        if (new_lo < this.low) {
+            new_hi++;
+        }
+        return new int64(new_lo, new_hi);
+    }
+    this.sub32 = function (val) {
+        let new_lo = (((this.low >>> 0) - val) & 0xFFFFFFFF) >>> 0;
+        let new_hi = (this.hi >>> 0);
+
+        if (new_lo > (this.low) & 0xFFFFFFFF) {
+            new_hi--;
+        }
+        return new int64(new_lo, new_hi);
+    }
+    this.sub32inplace = function (val) {
+        let new_lo = (((this.low >>> 0) - val) & 0xFFFFFFFF) >>> 0;
+        let new_hi = (this.hi >>> 0);
+
+        if (new_lo > (this.low) & 0xFFFFFFFF) {
+            new_hi--;
+        }
+        this.hi = new_hi;
+        this.low = new_lo;
+    }
+    this.and32 = function (val) {
+        let new_lo = this.low & val;
+        let new_hi = this.hi;
+        return new int64(new_lo, new_hi);
+    }
+    this.and64 = function (vallo, valhi) {
+        let new_lo = this.low & vallo;
+        let new_hi = this.hi & valhi;
+        return new int64(new_lo, new_hi);
+    }
+    this.toString = function () {
+        let lo_str = (this.low >>> 0).toString(16);
+        let hi_str = (this.hi >>> 0).toString(16);
+
+        if (this.hi == 0)
+            return lo_str;
+        else
+            lo_str = zeroFill(lo_str, 8)
+
+        return hi_str + lo_str;
+    }
+    return this;
+}
+function zeroFill(number, width) {
+    width -= number.toString().length;
+
+    if (width > 0) {
+        return new Array(width + (/\./.test(number) ? 2 : 1)).join('0') + number;
+    }
+
+    return number + ""; // always return a string
+}
 function die(msg) {
     throw new Error("PSFree failed: " + msg + "\nReload the page and try again.");
 }
-
 function debug_log(msg) {
     print(msg);
 }
-
 function clear_log() {
     // document.body.innerHTML = null;
 }
-
 function str2array(str, length, offset) {
     if (offset === undefined) {
         offset = 0;
@@ -20,7 +89,6 @@ function str2array(str, length, offset) {
     }
     return a;
 }
-
 function align(a, alignment) {
     if (!(a instanceof Int)) {
         a = new Int(a);
@@ -30,7 +98,6 @@ function align(a, alignment) {
     let low = a.low() & mask;
     return new type(low, a.high());
 }
-
 async function send(url, buffer, file_name, onload=() => {}) {
     const file = new File(
         [buffer],
@@ -48,15 +115,12 @@ async function send(url, buffer, file_name, onload=() => {}) {
     }
     onload();
 }
-
 const KB = 1024;
 const MB = KB * KB;
 const GB = KB * KB * KB;
-
 function check_range(x) {
     return (-0x80000000 <= x) && (x <= 0xffffffff);
 }
-
 function unhexlify(hexstr) {
     if (hexstr.substring(0, 2) === "0x") {
         hexstr = hexstr.substring(2);
@@ -67,17 +131,14 @@ function unhexlify(hexstr) {
     if (hexstr.length % 2 === 1) {
         throw TypeError("Invalid hex string");
     }
-
     let bytes = new Uint8Array(hexstr.length / 2);
     for (let i = 0; i < hexstr.length; i += 2) {
         let new_i = hexstr.length - 2 - i;
         let substr = hexstr.slice(new_i, new_i + 2);
         bytes[i / 2] = parseInt(substr, 16);
     }
-
     return bytes;
 }
-
 function operation(f, nargs) {
     return function () {
         if (arguments.length !== nargs)
@@ -93,7 +154,6 @@ function operation(f, nargs) {
         return f.apply(this, new_args);
     };
 }
-
 class Int {
     constructor(low, high) {
         let buffer = new Uint32Array(2);
@@ -109,14 +169,12 @@ class Int {
         if (arguments.length === 1) {
             is_one = true;
         }
-
         if (!is_one) {
             if (typeof (low) !== 'number'
                 && typeof (high) !== 'number') {
                 throw TypeError('low/high must be numbers');
             }
         }
-
         if (typeof low === 'number') {
             if (!check_range(low)) {
                 throw TypeError('low not a valid value: ' + low);
@@ -146,15 +204,12 @@ class Int {
         } else {
             throw TypeError('Int does not support your object for conversion');
         }
-
         this.buffer = buffer;
         this.bytes = bytes;
-
         this.eq = operation(function eq(b) {
             const a = this;
             return a.low() === b.low() && a.high() === b.high();
         }, 1);
-
         this.neg = operation(function neg() {
             let type = this.constructor;
 
@@ -165,7 +220,6 @@ class Int {
 
             return new type(res);
         }, 0);
-
         this.add = operation(function add(b) {
             let type = this.constructor;
 
@@ -184,7 +238,6 @@ class Int {
 
             return new type(low, high);
         }, 1);
-
         this.sub = operation(function sub(b) {
             let type = this.constructor;
 
@@ -206,15 +259,12 @@ class Int {
             return new type(low, high);
         }, 1);
     }
-
     low() {
         return this.buffer[0];
     }
-
     high() {
         return this.buffer[1];
     }
-
     toString(is_pretty) {
         if (!is_pretty) {
             let low = this.low().toString(16).padStart(8, '0');
@@ -223,73 +273,59 @@ class Int {
         }
         let high = this.high().toString(16).padStart(8, '0');
         high = high.substring(0, 4) + '_' + high.substring(4);
-
         let low = this.low().toString(16).padStart(8, '0');
         low = low.substring(0, 4) + '_' + low.substring(4);
         return '0x' + high + '_' + low;
     }
 }
-
 Int.Zero = new Int(0);
 Int.One = new Int(1);
-
 let mem = null;
-
 function init_module(memory) {
     mem = memory;
 }
-
 class Addr extends Int {
     read8(offset) {
         const addr = this.add(offset);
         return mem.read8(addr);
     }
-
     read16(offset) {
         const addr = this.add(offset);
         return mem.read16(addr);
     }
-
     read32(offset) {
         const addr = this.add(offset);
         return mem.read32(addr);
     }
-
     read64(offset) {
         const addr = this.add(offset);
         return mem.read64(addr);
     }
-
     readp(offset) {
         const addr = this.add(offset);
         return mem.readp(addr);
     }
-
     write8(offset, value) {
         const addr = this.add(offset);
 
         mem.write8(addr, value);
     }
-
     write16(offset, value) {
         const addr = this.add(offset);
 
         mem.write16(addr, value);
     }
-
     write32(offset, value) {
         const addr = this.add(offset);
 
         mem.write32(addr, value);
     }
-
     write64(offset, value) {
         const addr = this.add(offset);
 
         mem.write64(addr, value);
     }
 }
-
 class MemoryBase {
     _addrof(obj) {
         if (typeof obj !== 'object'
@@ -301,14 +337,11 @@ class MemoryBase {
         write64(this.main, view_m_vector, this.butterfly.sub(0x10));
         let res = read64(this.worker, 0);
         write64(this.main, view_m_vector, this._current_addr);
-
         return res;
     }
-
     addrof(obj) {
         return new Addr(this._addrof(obj));
     }
-
     set_addr(addr) {
         if (!(addr instanceof Int)) {
             throw TypeError('addr must be an Int');
@@ -316,19 +349,15 @@ class MemoryBase {
         this._current_addr = addr;
         write64(this.main, view_m_vector, this._current_addr);
     }
-
     get_addr() {
         return this._current_addr;
     }
-
     write0(size, offset, value) {
         const i = offset + 1;
         if (i >= 2**32 || i < 0) {
             throw RangeError(`read0() invalid offset: ${offset}`);
         }
-
         this.set_addr(new Int(-1));
-
         switch (size) {
             case 8: {
                 this.worker[i] = value;
@@ -347,108 +376,81 @@ class MemoryBase {
             }
         }
     }
-
     read8(addr) {
         this.set_addr(addr);
         return this.worker[0];
     }
-
     read16(addr) {
         this.set_addr(addr);
         return read16(this.worker, 0);
     }
-
     read32(addr) {
         this.set_addr(addr);
         return read32(this.worker, 0);
     }
-
     read64(addr) {
         this.set_addr(addr);
         return read64(this.worker, 0);
     }
-
     readp(addr) {
         return new Addr(this.read64(addr));
     }
-
     write8(addr, value) {
         this.set_addr(addr);
         this.worker[0] = value;
     }
-
     write16(addr, value) {
         this.set_addr(addr);
         write16(this.worker, 0, value);
     }
-
     write32(addr, value) {
         this.set_addr(addr);
         write32(this.worker, 0, value);
     }
-
     write64(addr, value) {
         this.set_addr(addr);
         write64(this.worker, 0, value);
     }
 }
-
 class Memory extends MemoryBase {
     constructor(main, worker)  {
         super();
-
         this.main = main;
         this.worker = worker;
-
         worker.a = 0;
         this.butterfly = read64(main, js_butterfly);
-
         write32(main, view_m_length, 0xffffffff);
-
         this._current_addr = Int.Zero;
-
         init_module(this);
     }
 }
-
 function make_buffer(addr, size) {
     const u = new Uint8Array(1001);
     const u_addr = mem.addrof(u);
-
     const old_addr = u_addr.read64(view_m_vector);
     const old_size = u_addr.read32(view_m_length);
-
     u_addr.write64(view_m_vector, addr);
     u_addr.write32(view_m_length, size);
-
     const copy = new Uint8Array(u.length);
     copy.set(u);
-
     const res = copy.buffer;
-
     u_addr.write64(view_m_vector, old_addr);
     u_addr.write32(view_m_length, old_size);
-
     return res;
 }
-
 function check_magic_at(p, is_text) {
     const text_magic = [
         new Int([0x55, 0x48, 0x89, 0xe5, 0x41, 0x57, 0x41, 0x56]),
         new Int([0x41, 0x55, 0x41, 0x54, 0x53, 0x50, 0x48, 0x8d]),
     ];
-
     const data_magic = [
         new Int(0x20),
         new Int(0x3c13f4bf, 0x2),
     ];
-
     const magic = is_text ? text_magic : data_magic;
     const value = [p.read64(0), p.read64(8)];
-
     return value[0].eq(magic[0]) && value[1].eq(magic[1]);
 }
-
 function find_base(addr, is_text, is_back) {
     const page_size = 16 * KB;
     addr = align(addr, page_size);
@@ -461,14 +463,12 @@ function find_base(addr, is_text, is_back) {
     }
     return addr;
 }
-
 function get_view_vector(view) {
     if (!ArrayBuffer.isView(view)) {
         throw TypeError(`object not a JSC::JSArrayBufferView: ${view}`);
     }
     return mem.addrof(view).readp(view_m_vector);
 }
-
 function resolve_import(import_addr) {
     if (import_addr.read16(0) !== 0x25ff) {
         throw Error(
@@ -479,10 +479,8 @@ function resolve_import(import_addr) {
     const disp = import_addr.read32(2);
     const offset = new Int(disp, disp >> 31);
     const function_addr = import_addr.readp(offset.add(6));
-
     return function_addr;
 }
-
 function init_syscall_array(
     syscall_array,
     libkernel_web_base,
@@ -494,13 +492,11 @@ function init_syscall_array(
     if (max_search_size < 0) {
         throw Error(`max_search_size is less than 0: ${max_search_size}`);
     }
-
     const libkernel_web_buffer = make_buffer(
         libkernel_web_base,
         max_search_size,
     );
     const kbuf = new Uint8Array(libkernel_web_buffer);
-
     let text_size = 0;
     let found = false;
     for (let i = 0; i < max_search_size; i++) {
@@ -520,7 +516,6 @@ function init_syscall_array(
             + ` ${libkernel_web_base}`
         );
     }
-
     for (let i = 0; i < text_size; i++) {
         if (kbuf[i] === 0x48
             && kbuf[i + 1] === 0xc7
@@ -537,7 +532,6 @@ function init_syscall_array(
         }
     }
 }
-
 function read(u8_view, offset, size) {
     let res = 0;
     for (let i = 0; i < size; i++) {
@@ -545,15 +539,12 @@ function read(u8_view, offset, size) {
     }
     return res >>> 0;
 }
-
 function read16(u8_view, offset) {
     return read(u8_view, offset, 2);
 }
-
 function read32(u8_view, offset) {
     return read(u8_view, offset, 4);
 }
-
 function read64(u8_view, offset) {
     let res = [];
     for (let i = 0; i < 8; i++) {
@@ -561,26 +552,21 @@ function read64(u8_view, offset) {
     }
     return new Int(res);
 }
-
 function write(u8_view, offset, value, size) {
     for (let i = 0; i < size; i++) {
         u8_view[offset + i]  = (value >>> i*8) & 0xff;
     }
 }
-
 function write16(u8_view, offset, value) {
     write(u8_view, offset, value, 2);
 }
-
 function write32(u8_view, offset, value) {
     write(u8_view, offset, value, 4);
 }
-
 function write64(u8_view, offset, value) {
     if (!(value instanceof Int)) {
         throw TypeError('write64 value must be an Int');
     }
-
     let low = value.low();
     let high = value.high();
 
@@ -591,7 +577,6 @@ function write64(u8_view, offset, value) {
         u8_view[offset + 4 + i]  = (high >>> i*8) & 0xff;
     }
 }
-
 function sread64(str, offset) {
     let res = [];
     for (let i = 0; i < 8; i++) {
@@ -599,7 +584,6 @@ function sread64(str, offset) {
     }
     return new Int(res);
 }
-
 const SYS_SYSCALL = 0x000;
 const SYS_EXIT = 0x001;
 const SYS_FORK = 0x002;

