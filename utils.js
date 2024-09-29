@@ -13,7 +13,6 @@ function int64(low, hi) {
     this.add32 = function (val) {
         let new_lo = (((this.low >>> 0) + val) & 0xFFFFFFFF) >>> 0;
         let new_hi = (this.hi >>> 0);
-
         if (new_lo < this.low) {
             new_hi++;
         }
@@ -98,17 +97,17 @@ function align(a, alignment) {
     let low = a.low() & mask;
     return new type(low, a.high());
 }
-async function send(url, buffer, file_name, onload=() => {}) {
+async function send(url, buffer, file_name, onload = () => { }) {
     const file = new File(
         [buffer],
         file_name,
-        {type:'application/octet-stream'}
+        { type: 'application/octet-stream' }
     );
     const form = new FormData();
     form.append('upload', file);
 
     debug_log('send');
-    const response = await fetch(url, {method: 'POST', body: form});
+    const response = await fetch(url, { method: 'POST', body: form });
 
     if (!response.ok) {
         throw Error(`Network response was not OK, status: ${response.status}`);
@@ -354,7 +353,7 @@ class MemoryBase {
     }
     write0(size, offset, value) {
         const i = offset + 1;
-        if (i >= 2**32 || i < 0) {
+        if (i >= 2 ** 32 || i < 0) {
             throw RangeError(`read0() invalid offset: ${offset}`);
         }
         this.set_addr(new Int(-1));
@@ -413,7 +412,7 @@ class MemoryBase {
     }
 }
 class Memory extends MemoryBase {
-    constructor(main, worker)  {
+    constructor(main, worker) {
         super();
         this.main = main;
         this.worker = worker;
@@ -535,7 +534,7 @@ function init_syscall_array(
 function read(u8_view, offset, size) {
     let res = 0;
     for (let i = 0; i < size; i++) {
-        res += u8_view[offset + i] << i*8;
+        res += u8_view[offset + i] << i * 8;
     }
     return res >>> 0;
 }
@@ -554,7 +553,7 @@ function read64(u8_view, offset) {
 }
 function write(u8_view, offset, value, size) {
     for (let i = 0; i < size; i++) {
-        u8_view[offset + i]  = (value >>> i*8) & 0xff;
+        u8_view[offset + i] = (value >>> i * 8) & 0xff;
     }
 }
 function write16(u8_view, offset, value) {
@@ -571,10 +570,10 @@ function write64(u8_view, offset, value) {
     let high = value.high();
 
     for (let i = 0; i < 4; i++) {
-        u8_view[offset + i]  = (low >>> i*8) & 0xff;
+        u8_view[offset + i] = (low >>> i * 8) & 0xff;
     }
     for (let i = 0; i < 4; i++) {
-        u8_view[offset + 4 + i]  = (high >>> i*8) & 0xff;
+        u8_view[offset + 4 + i] = (high >>> i * 8) & 0xff;
     }
 }
 function sread64(str, offset) {
