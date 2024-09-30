@@ -449,6 +449,6 @@ async function run_psfree() {
         }
     };
     window.p = prim;    
-    //setTimeout(run_hax, 1500);
-    run_hax();
+    setTimeout(run_hax, 1500);
+    //run_hax();
 }
