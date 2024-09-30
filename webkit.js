@@ -448,7 +448,6 @@ async function run_psfree() {
             return new int64(res.low(), res.high());
         }
     };
-    window.p = prim;    
-    setTimeout(run_hax, 1500);
-    //run_hax();
+    window.p = prim;
+    run_hax();
 }
